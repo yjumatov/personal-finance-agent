@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance AI Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #14b8a6;
+            --warning: #f59e0b;
+            --success: #10b981;
+            
+            --light-bg: #f8fafc;
+            --light-card: #ffffff;
+            --light-text: #1e293b;
+            --light-border: #e2e8f0;
+            
+            --dark-bg: #0f172a;
+            --dark-card: #1e293b;
+            --dark-text: #f1f5f9;
+            --dark-border: #334155;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--light-text);
+            transition: all 0.3s ease;
+            line-height: 1.6;
+        }
+
+        body.dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.95;
+            margin-bottom: 1rem;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--light-card);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        body.dark-mode .card {
+            background: var(--dark-card);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Input Section */
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+
+        body.dark-mode label {
+            color: var(--dark-text);
+        }
+
+        input, select, textarea {
+            padding: 0.75rem;
+            border: 2px solid var(--light-border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: var(--light-bg);
+            color: var(--light-text);
+        }
+
+        body.dark-mode input,
+        body.dark-mode select,
+        body.dark-mode textarea {
+            background: var(--dark-bg);
+            color: var(--dark-text);
+            border-color: var(--dark-border);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.85rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(20, 184, 166, 0.3);
+        }
+
+        .btn-small {
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        /* Expense List */
+        .expense-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 2px solid var(--light-border);
+            padding: 1rem;
+        }
+
+        body.dark-mode .expense-list {
+            border-color: var(--dark-border);
+        }
+
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: var(--light-bg);
+            border-radius: 6px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.2s ease;
+        }
+
+        body.dark-mode .expense-item {
+            background: var(--dark-bg);
+        }
+
+        .expense-item:hover {
+            transform: translateX(5px);
+        }
+
+        .expense-info {
+            flex: 1;
+        }
+
+        .expense-date {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 0.2rem;
+        }
+
+        .expense-desc {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .expense-amount {
+            font-weight: 700;
+            color: var(--secondary);
+            font-size: 1.1rem;
+        }
+
+        .btn-remove {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.7rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-remove:hover {
+            background: #dc2626;
+        }
+
+        /* Results Section */
+        .results-section {
+            grid-column: 1 / -1;
+        }
+
+        .result-card {
+            background: var(--light-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 5px solid var(--primary);
+        }
+
+        body.dark-mode .result-card {
+            background: var(--dark-card);
+        }
+
+        .result-card.recommendations {
+            border-left-color: var(--secondary);
+        }
+
+        .result-card.budget {
+            border-left-color: var(--accent);
+        }
+
+        .result-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-text {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--light-text);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        body.dark-mode .result-text {
+            color: var(--dark-text);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 3px solid rgba(99, 102, 241, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #dc2626;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            border-left: 4px solid #22c55e;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        body.dark-mode .alert-error {
+            background: rgba(220, 38, 38, 0.2);
+            color: #fca5a5;
+        }
+
+        body.dark-mode .alert-success {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        body.dark-mode .alert-info {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 3rem;
+        }
+
+        body.dark-mode footer {
+            color: #94a3b8;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light-bg);
+        }
+
+        body.dark-mode ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+
+        /* Tab Selection */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--light-border);
+        }
+
+        body.dark-mode .tabs {
+            border-bottom-color: var(--dark-border);
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--light-text);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .tab-btn {
+            color: var(--dark-text);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <header>
+        <h1>💰 AI Personal Finance Agent</h1>
+        <p>Analyze your expenses and get intelligent financial recommendations</p>
+    </header>
+
+    <div class="container">
+        <!-- Input Section -->
+        <div class="grid">
+            <div class="card">
+                <h2><span class="card-icon">📝</span> Add Expenses</h2>
+                
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('manual')">Manual</button>
+                    <button class="tab-btn" onclick="switchTab('csv')">Upload CSV</button>
+                </div>
+
+                <!-- Manual Entry Tab -->
+                <div id="manual" class="tab-content active">
+                    <div class="input-section">
+                        <div class="input-group">
+                            <label>Date</label>
+                            <input type="date" id="expenseDate">
+                        </div>
+
+                        <div class="input-group">
+                            <label>Amount ($)</label>
+                            <input type="number" id="expenseAmount" placeholder="0.00" step="0.01">
+                        </div>
+
+                        <div class="input-group">
+                            <label>Category</label>
+                            <select id="expenseCategory">
+                                <option>Food</option>
+                                <option>Transport</option>
+                                <option>Utilities</option>
+                                <option>Entertainment</option>
+                                <option>Shopping</option>
+                                <option>Healthcare</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Description</label>
+                            <input type="text" id="expenseDescription" placeholder="e.g., Grocery shopping">
+                        </div>
+
+                        <button class="btn btn-primary" onclick="addExpense()">
+                            ➕ Add Expense
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CSV Upload Tab -->
+                <div id="csv" class="tab-content">
+                    <div class="input-section">
+                        <div class="input-group">
+                            <label>Upload CSV File</label>
+                            <input type="file" id="csvFile" accept=".csv" onchange="handleCSVUpload(event)">
+                        </div>
+                        <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.5rem;">
+                            Format: date, description, amount
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expenses List -->
+            <div class="card">
+                <h2><span class="card-icon">📊</span> Your Expenses</h2>
+                <div id="expensesList" class="expense-list">
+                    <p style="text-align: center; color: #94a3b8; padding: 2rem;">
+                        No expenses yet. Add some to get started!
+                    </p>
+                </div>
+                <div class="stats" style="margin-top: 1rem;">
+                    <div class="stat-box">
+                        <div class="stat-label">Total</div>
+                        <div class="stat-value" id="totalSpent">$0.00</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Items</div>
+                        <div class="stat-value" id="itemCount">0</div>
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-small" onclick="clearExpenses()" style="width: 100%; margin-top: 1rem;">
+                    🗑️ Clear All
+                </button>
+            </div>
+        </div>
+
+        <!-- Analyze Button -->
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeExpenses()" style="padding: 1rem 3rem; font-size: 1.1rem;">
+                <span id="analyzeSpinner"></span>
+                🔍 Analyze My Finances
+            </button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" style="display: none;">
+            <div id="alertBox"></div>
+
+            <!-- Analysis Results -->
+            <div class="result-card">
+                <h3><span class="card-icon">📈</span> Expense Analysis</h3>
+                <div id="analysisResult" class="result-text">Loading...</div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="result-card recommendations">
+                <h3><span class="card-icon">💡</span> Money-Saving Recommendations</h3>
+                <div id="recommendationsResult" class="result-text">Loading...</div>
+            </div>
+
+            <!-- Budget Plan -->
+            <div class="result-card budget">
+                <h3><span class="card-icon">📋</span> Recommended Monthly Budget</h3>
+                <div id="budgetResult" class="result-text">Loading...</div>
+            </div>
+
+            <!-- Download Button -->
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn btn-secondary" onclick="downloadReport()">
+                    ⬇️ Download Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Made with ❤️ using AI Agents | Personal Finance Analysis System</p>
+    </footer>
+
+    <script>
+        // Initialize date to today
+        document.getElementById('expenseDate').valueAsDate = new Date();
+
+        // Expenses array
+        let expenses = [];
+        let analysisResult = null;
+
+        // Theme Toggle
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const btn = document.querySelector('.theme-toggle');
+            btn.textContent = document.body.classList.contains('dark-mode') ? '☀️ Light Mode' : '🌙 Dark Mode';
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+
+        // Load theme preference
+        window.addEventListener('load', () => {
+            if (localStorage.getItem('theme') === 'dark') {
+                toggleTheme();
+            }
+        });
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Add expense
+        function addExpense() {
+            const date = document.getElementById('expenseDate').value;
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const category = document.getElementById('expenseCategory').value;
+            const description = document.getElementById('expenseDescription').value;
+
+            if (!date || !amount || amount <= 0) {
+                showAlert('Please fill in all fields with valid amounts', 'error');
+                return;
+            }
+
+            expenses.push({
+                date,
+                description: description || category,
+                amount,
+                category
+            });
+
+            // Clear inputs
+            document.getElementById('expenseAmount').value = '';
+            document.getElementById('expenseDescription').value = '';
+            document.getElementById('expenseDate').valueAsDate = new Date();
+
+            updateExpensesList();
+            showAlert('✅ Expense added!', 'success');
+        }
+
+        // Handle CSV upload
+        function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const csv = e.target.result;
+                const lines = csv.split('\n');
+                
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].trim()) {
+                        const [date, desc, amount] = lines[i].split(',');
+                        if (date && desc && amount) {
+                            expenses.push({
+                                date: date.trim(),
+                                description: desc.trim(),
+                                amount: parseFloat(amount.trim()),
+                                category: 'Other'
+                            });
+                        }
+                    }
+                }
+                updateExpensesList();
+                showAlert(`✅ Loaded ${expenses.length} expenses from CSV!`, 'success');
+            };
+            reader.readAsText(file);
+        }
+
+        // Update expenses list UI
+        function updateExpensesList() {
+            const list = document.getElementById('expensesList');
+            
+            if (expenses.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">No expenses yet. Add some to get started!</p>';
+            } else {
+                list.innerHTML = expenses.map((exp, idx) => `
+                    <div class="expense-item">
+                        <div class="expense-info">
+                            <div class="expense-date">${exp.date}</div>
+                            <div class="expense-desc">${exp.description}</div>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <div class="expense-amount">$${exp.amount.toFixed(2)}</div>
+                            <button class="btn-remove" onclick="removeExpense(${idx})">Remove</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Update stats
+            const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+            document.getElementById('totalSpent').textContent = `$${total.toFixed(2)}`;
+            document.getElementById('itemCount').textContent = expenses.length;
+        }
+
+        // Remove expense
+        function removeExpense(idx) {
+            expenses.splice(idx, 1);
+            updateExpensesList();
+        }
+
+        // Clear all expenses
+        function clearExpenses() {
+            if (confirm('Are you sure? This will delete all expenses.')) {
+                expenses = [];
+                updateExpensesList();
+                showAlert('Expenses cleared', 'info');
+            }
+        }
+
+        // Analyze expenses
+        async function analyzeExpenses() {
+            if (expenses.length === 0) {
+                showAlert('Please add at least one expense', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('analyzeBtn');
+            const spinner = document.getElementById('analyzeSpinner');
+            spinner.innerHTML = '<span class="spinner"></span>';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:8000/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: 'Analyze my expenses',
+                        financial_data: { expenses }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    analysisResult = data;
+    
+                    // DEBUG: Log what we're getting
+                    console.log('API Response:', data);
+                    console.log('Has analysis:', !!data.analysis);
+                    console.log('Has recommendations:', !!data.recommendations);
+                    console.log('Has budget:', !!data.budget);
+    
+                    // Display all three sections
+                    const analysis = data.analysis || 'Analysis complete';
+                    const recommendations = data.recommendations || 'Recommendations coming soon';
+                    const budget = data.budget || 'Budget plan coming soon';
+    
+                    console.log('Analysis length:', analysis.length);
+                    console.log('Recommendations length:', recommendations.length);
+                    console.log('Budget length:', budget.length);
+    
+                    document.getElementById('analysisResult').textContent = analysis;
+                    document.getElementById('recommendationsResult').textContent = recommendations;
+                    document.getElementById('budgetResult').textContent = budget;
+
+                    document.getElementById('resultsSection').style.display = 'block';
+                    showAlert('✅ Analysis complete!', 'success');
+                    
+                    // Scroll to results
+                    setTimeout(() => {
+                        window.scrollTo({ 
+                            top: document.getElementById('resultsSection').offsetTop - 100, 
+                            behavior: 'smooth' 
+                        });
+                    }, 500);
+                } else {
+                    showAlert('Error: ' + (data.error || 'Analysis failed'), 'error');
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+            } finally {
+                spinner.innerHTML = '';
+                btn.disabled = false;
+            }
+        }
+
+        // Show alert
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => alertBox.innerHTML = '', 5000);
+        }
+
+        // Download report
+        function downloadReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                expenses: expenses,
+                analysis: analysisResult
+            };
+
+            const link = document.createElement('a');
+            link.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(report, null, 2));
+            link.download = `finance_report_${new Date().getTime()}.json`;
+            link.click();
+        }
+    </script>
+</body>
+</html>
