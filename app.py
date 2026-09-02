@@ -183,6 +183,31 @@ if st.session_state.analysis_result:
         budget_text = st.session_state.analysis_result.get('budget', '')
         st.write(budget_text)
 
+    # Token usage expander
+    usage = st.session_state.analysis_result.get("usage")
+    if usage:
+        with st.expander("🔢 Token usage"):
+            u_col1, u_col2, u_col3 = st.columns(3)
+            for col, label, key in [
+                (u_col1, "Expense Analyzer",  "analyzer"),
+                (u_col2, "Finance Advisor",   "recommender"),
+                (u_col3, "Budget Planner",    "budget_planner"),
+            ]:
+                agent_usage = usage.get(key, {})
+                with col:
+                    st.markdown(f"**{label}**")
+                    st.caption(f"In: {agent_usage.get('input_tokens', 0):,}")
+                    st.caption(f"Out: {agent_usage.get('output_tokens', 0):,}")
+            st.divider()
+            t_col1, t_col2, t_col3 = st.columns(3)
+            total_tokens = usage.get('total_input_tokens', 0) + usage.get('total_output_tokens', 0)
+            with t_col1:
+                st.metric("Total input tokens", f"{usage.get('total_input_tokens', 0):,}")
+            with t_col2:
+                st.metric("Total output tokens", f"{usage.get('total_output_tokens', 0):,}")
+            with t_col3:
+                st.metric("Total tokens", f"{total_tokens:,}")
+
     # Export button
     col1, col2 = st.columns(2)
     with col1:

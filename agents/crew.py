@@ -1,4 +1,3 @@
-from crewai import Crew, Process
 import os
 from dotenv import load_dotenv
 from anthropic import Anthropic
@@ -50,12 +49,17 @@ Provide:
                 {"role": "user", "content": analysis_prompt}
             ]
         )
-        
+
         elapsed = time.time() - start_time
         analysis = analysis_response.content[0].text
-        
+        analyzer_usage = {
+            "input_tokens": analysis_response.usage.input_tokens,
+            "output_tokens": analysis_response.usage.output_tokens,
+        }
+
         print(f"DEBUG: Got analysis in {elapsed:.2f}s")
         print(f"DEBUG: Analysis length: {len(analysis)} chars")
+        print(f"DEBUG: Analyzer tokens — in={analyzer_usage['input_tokens']} out={analyzer_usage['output_tokens']}")
         
         # Get recommendations
         print("DEBUG: Calling Claude for recommendations...")
@@ -75,12 +79,17 @@ Provide 3 ways to save money."""
                 {"role": "user", "content": recommendation_prompt}
             ]
         )
-        
+
         elapsed = time.time() - start_time
         recommendations = recommendations_response.content[0].text
-        
+        recommender_usage = {
+            "input_tokens": recommendations_response.usage.input_tokens,
+            "output_tokens": recommendations_response.usage.output_tokens,
+        }
+
         print(f"DEBUG: Got recommendations in {elapsed:.2f}s")
         print(f"DEBUG: Recommendations length: {len(recommendations)} chars")
+        print(f"DEBUG: Recommender tokens — in={recommender_usage['input_tokens']} out={recommender_usage['output_tokens']}")
 
         # Get budget plan
         print("DEBUG: Calling Claude for budget plan...")
@@ -107,9 +116,17 @@ Create a recommended monthly budget with:
 
         elapsed = time.time() - start_time
         budget = budget_response.content[0].text
+        budget_planner_usage = {
+            "input_tokens": budget_response.usage.input_tokens,
+            "output_tokens": budget_response.usage.output_tokens,
+        }
 
         print(f"DEBUG: Got budget plan in {elapsed:.2f}s")
+        print(f"DEBUG: Budget planner tokens — in={budget_planner_usage['input_tokens']} out={budget_planner_usage['output_tokens']}")
         print("DEBUG: Analysis complete!\n")
+
+        total_in  = analyzer_usage["input_tokens"] + recommender_usage["input_tokens"] + budget_planner_usage["input_tokens"]
+        total_out = analyzer_usage["output_tokens"] + recommender_usage["output_tokens"] + budget_planner_usage["output_tokens"]
 
         return {
             "status": "success",
@@ -117,7 +134,14 @@ Create a recommended monthly budget with:
             "recommendations": recommendations,
             "budget": budget,
             "expense_data": expense_data,
-            "agents_used": ["Expense Analyzer", "Personal Finance Advisor", "Budget Planner"]
+            "agents_used": ["Expense Analyzer", "Personal Finance Advisor", "Budget Planner"],
+            "usage": {
+                "analyzer":       analyzer_usage,
+                "recommender":    recommender_usage,
+                "budget_planner": budget_planner_usage,
+                "total_input_tokens":  total_in,
+                "total_output_tokens": total_out,
+            },
         }
     
     except Exception as e:

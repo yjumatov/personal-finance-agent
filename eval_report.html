@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Finance Agent — Eval Report</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       background: #f5f5f5; color: #212121; margin: 0; padding: 24px; }
+h1 { font-size: 1.8rem; margin-bottom: 4px; }
+.subtitle { color: #616161; margin-bottom: 32px; font-size: .95rem; }
+.card { background: #fff; border-radius: 10px; padding: 24px;
+        margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.card.error { border-left: 4px solid #c62828; }
+.error-msg { color: #c62828; }
+h2 { font-size: 1.25rem; margin: 0 0 4px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; color: #424242; }
+.desc { color: #757575; margin: 0 0 16px; font-size: .9rem; }
+.score-badge { font-size: 1.5rem; font-weight: 700; margin: 8px 0 16px; }
+.score-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+              margin-bottom: 20px; }
+.label { font-size: .8rem; color: #616161; display: block; margin-bottom: 4px; }
+.usage-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.usage-table th { text-align: left; background: #eeeeee; padding: 6px 10px;
+                  border-bottom: 2px solid #bdbdbd; }
+.usage-table td { padding: 5px 10px; border-bottom: 1px solid #e0e0e0; }
+details { margin-bottom: 8px; }
+summary { cursor: pointer; padding: 6px; background: #f5f5f5;
+          border-radius: 4px; font-size: .9rem; }
+.output-pre { white-space: pre-wrap; word-break: break-word;
+              background: #fafafa; border: 1px solid #e0e0e0;
+              border-radius: 4px; padding: 12px; font-size: .82rem;
+              max-height: 320px; overflow-y: auto; }
+.aggregate { display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0; }
+.stat { background: #fff; border-radius: 8px; padding: 16px 24px;
+        text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.1);
+        flex: 1; min-width: 140px; }
+.stat-num { font-size: 1.5rem; font-weight: 700; color: #1565c0; }
+</style>
+</head>
+<body>
+<h1>Personal Finance Agent — Eval Report</h1>
+<p class="subtitle">Model: <strong>claude-opus-4-1</strong> &nbsp;|&nbsp; Generated: 2026-06-11 14:39</p>
+
+<div class="card">
+  <h2>Summary</h2>
+  <table class='usage-table'><thead><tr><th>Scenario</th><th>Total score</th><th>Analysis</th><th>Recommendations</th><th>Budget</th><th>Tokens in/out</th></tr></thead><tbody><tr><td>Student Budget</td><td style='color:#2e7d32;font-weight:bold;'>9/9</td><td>3/3</td><td>3/3</td><td>3/3</td><td>1,357 / 1,868</td></tr></tbody></table>
+  <h2 style="margin-top:24px;">Aggregate</h2>
+  
+<div class="aggregate">
+  <div class="stat"><span class="stat-num">9.0/9</span><br>avg score</div>
+  <div class="stat"><span class="stat-num">1,357</span><br>avg input tokens/run</div>
+  <div class="stat"><span class="stat-num">1,868</span><br>avg output tokens/run</div>
+  <div class="stat"><span class="stat-num">3,225</span><br>total tokens (1 runs)</div>
+</div>
+
+</div>
+
+
+<div class="card">
+  <h2>1. Student Budget</h2>
+  <p class="desc">Student with high food-delivery spend and low fixed costs.</p>
+
+  <div class="score-badge" style="color:#2e7d32;">
+    Score: 9/9
+  </div>
+
+  <div class="score-grid">
+    <div>
+      <span class="label">Analysis (3/3)</span>
+      <div style="background:#e0e0e0;border-radius:4px;height:12px;width:100%;"><div style="background:#2e7d32;width:100%;height:12px;border-radius:4px;"></div></div>
+    </div>
+    <div>
+      <span class="label">Recommendations (3/3)</span>
+      <div style="background:#e0e0e0;border-radius:4px;height:12px;width:100%;"><div style="background:#2e7d32;width:100%;height:12px;border-radius:4px;"></div></div>
+    </div>
+    <div>
+      <span class="label">Budget Plan (3/3)</span>
+      <div style="background:#e0e0e0;border-radius:4px;height:12px;width:100%;"><div style="background:#2e7d32;width:100%;height:12px;border-radius:4px;"></div></div>
+    </div>
+  </div>
+
+  <h3>Token Usage</h3>
+  <table class='usage-table'><thead><tr><th>Agent</th><th>Input tokens</th><th>Output tokens</th><th>Total</th></tr></thead><tbody><tr><td>Analyzer</td><td>236</td><td>525</td><td>761</td></tr><tr><td>Recommender</td><td>546</td><td>399</td><td>945</td></tr><tr><td>Budget Planner</td><td>575</td><td>944</td><td>1,519</td></tr><tr style='font-weight:bold;border-top:2px solid #aaa;'><td>Total</td><td>1,357</td><td>1,868</td><td>3,225</td></tr></tbody></table>
+
+  <h3>Input Expenses</h3>
+  <table class='usage-table'><thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Category</th></tr></thead><tbody><tr><td>2024-01-02</td><td>Uber Eats</td><td>$34.50</td><td>Food Delivery</td></tr><tr><td>2024-01-05</td><td>DoorDash</td><td>$28.00</td><td>Food Delivery</td></tr><tr><td>2024-01-08</td><td>Grocery Store</td><td>$55.00</td><td>Groceries</td></tr><tr><td>2024-01-10</td><td>Uber Eats</td><td>$22.00</td><td>Food Delivery</td></tr><tr><td>2024-01-12</td><td>Netflix</td><td>$15.99</td><td>Entertainment</td></tr><tr><td>2024-01-15</td><td>DoorDash</td><td>$31.00</td><td>Food Delivery</td></tr><tr><td>2024-01-18</td><td>Spotify</td><td>$9.99</td><td>Entertainment</td></tr><tr><td>2024-01-20</td><td>Grocery Store</td><td>$48.00</td><td>Groceries</td></tr><tr><td>2024-01-23</td><td>Uber Eats</td><td>$26.50</td><td>Food Delivery</td></tr><tr><td>2024-01-25</td><td>Public Transit Pass</td><td>$35.00</td><td>Transport</td></tr></tbody></table>
+
+  <h3>Agent Outputs</h3>
+  <details><summary><strong>Expense Analysis</strong></summary><pre class="output-pre">## Expense Analysis
+
+### 1. Categorized List
+
+**Food Delivery**
+- 2024-01-02: Uber Eats - $34.50
+- 2024-01-10: Uber Eats - $22.00
+- 2024-01-23: Uber Eats - $26.50
+- 2024-01-05: DoorDash - $28.00
+- 2024-01-15: DoorDash - $31.00
+
+**Groceries**
+- 2024-01-08: Grocery Store - $55.00
+- 2024-01-20: Grocery Store - $48.00
+
+**Entertainment/Subscriptions**
+- 2024-01-12: Netflix - $15.99
+- 2024-01-18: Spotify - $9.99
+
+**Transportation**
+- 2024-01-25: Public Transit Pass - $35.00
+
+### 2. Totals by Category
+- **Food Delivery**: $142.00
+- **Groceries**: $103.00
+- **Entertainment/Subscriptions**: $25.98
+- **Transportation**: $35.00
+- **TOTAL**: $305.98
+
+### 3. Top 3 Categories
+1. **Food Delivery** - $142.00 (46.4% of total)
+2. **Groceries** - $103.00 (33.7% of total)
+3. **Transportation** - $35.00 (11.4% of total)
+
+### 4. Unusual Spending Observations
+- **High food delivery usage**: You&#x27;re spending significantly more on food delivery ($142) than groceries ($103), which is unusual and costly. Most people spend 2-3x more on groceries than delivery.
+- **Frequency concern**: 5 food delivery orders in one month averages to more than once per week
+- **Potential savings opportunity**: Each delivery order averages $28.40 - cooking these meals could save you approximately $100+ per month
+- **Food spending total**: Combined food costs (delivery + groceries) of $245 represents 80% of your tracked expenses
+
+**Recommendation**: Consider reducing food delivery to once per week or special occasions to significantly reduce monthly expenses.</pre></details>
+  <details><summary><strong>Recommendations</strong></summary><pre class="output-pre">Based on your expense analysis, here are **3 practical ways to save money**:
+
+## 1. **Cut Food Delivery by 60% - Save ~$85/month**
+- **Limit delivery to once per week** (currently averaging 5x/month)
+- Choose the cheapest delivery day as your &quot;treat day&quot;
+- Delete delivery apps from your phone to reduce impulse orders
+- **Action**: Set a weekly $30 delivery budget and stick to it
+
+## 2. **Meal Prep Sundays - Save ~$50/month**
+- Spend 2 hours on Sunday preparing meals for the week
+- Cook large batches of 3-4 simple recipes (pasta, rice bowls, soups)
+- Invest in good food containers (~$20 one-time cost)
+- **Action**: Replace at least 3 delivery meals with prepped meals
+- **Bonus tip**: Your current grocery budget of $103 could easily feed you for the entire month with smart shopping
+
+## 3. **Implement the &quot;24-Hour Rule&quot; for Delivery - Save ~$30/month**
+- When you want to order delivery, write it down and wait 24 hours
+- If you still want it the next day, then order
+- Most cravings will pass, and you&#x27;ll cook something at home instead
+- **Action**: Keep easy 15-minute meals on hand (frozen pizza, instant noodles, sandwiches) for when cravings hit
+
+### **Total Potential Monthly Savings: $165**
+This represents a **54% reduction** in your current spending just by controlling food delivery habits!
+
+**Quick win**: Start this week by choosing just 2 delivery days and meal prepping one simple dish like pasta or fried rice in bulk.</pre></details>
+  <details><summary><strong>Budget Plan</strong></summary><pre class="output-pre"># Recommended Monthly Budget
+
+## Budget Breakdown by Category
+
+Based on your spending patterns and financial best practices, here&#x27;s a recommended budget allocation:
+
+### Essential Expenses (50-60%)
+- **Housing**: 25-30% (rent/mortgage, utilities)
+- **Groceries**: 10-12% ($150-180)
+- **Transportation**: 5-10% ($75-150)
+- **Insurance**: 5-10% (health, renters/home, auto if applicable)
+- **Phone/Internet**: 2-3% ($30-45)
+
+### Lifestyle Expenses (20-30%)
+- **Food Delivery/Dining Out**: 5% ($75 max)
+- **Entertainment/Subscriptions**: 3-5% ($45-75)
+- **Personal Care**: 2-3% ($30-45)
+- **Clothing**: 2-3% ($30-45)
+- **Miscellaneous**: 5% ($75)
+
+### Financial Goals (20-30%)
+- **Emergency Fund**: 10-15% ($150-225)
+- **Retirement/Investments**: 10% ($150)
+- **Short-term Savings**: 5% ($75)
+
+## Recommended Monthly Income
+
+Based on your current tracked expenses (~$306) and assuming they represent only discretionary spending:
+
+**Minimum Recommended Monthly Income**: **$1,500-2,000**
+- This assumes your $306 represents about 15-20% of total budget
+- Allows for proper allocation to all categories
+
+**Ideal Monthly Income**: **$2,500-3,000**
+- Provides comfortable coverage of all expenses
+- Allows for 20-30% savings rate
+- Creates financial flexibility
+
+## Emergency Fund Target
+
+**Initial Goal**: $1,000 (Quick starter emergency fund)
+**3-Month Target**: $4,500-6,000 (3 months of essential expenses)
+**Ultimate Goal**: $9,000-12,000 (3-6 months of total expenses)
+
+### Building Timeline:
+- Month 1-3: Save $350/month → $1,000 starter fund
+- Month 4-12: Save $200-300/month → reach 3-month fund
+- Year 2+: Continue until 6-month fund achieved
+
+## Monthly Savings Goals
+
+### Based on Income Levels:
+
+**If earning $1,500/month:**
+- Emergency Fund: $100 (7%)
+- Long-term Savings: $50 (3%)
+- **Total Savings**: $150 (10%)
+
+**If earning $2,000/month:**
+- Emergency Fund: $150 (7.5%)
+- Long-term Savings: $100 (5%)
+- Short-term Goals: $50 (2.5%)
+- **Total Savings**: $300 (15%)
+
+**If earning $2,500/month:**
+- Emergency Fund: $200 (8%)
+- Retirement: $200 (8%)
+- Short-term Goals: $100 (4%)
+- **Total Savings**: $500 (20%)
+
+## Action Steps for Your Current Situation:
+
+1. **Immediate Changes**:
+   - Reduce food delivery to $75/month (save $67)
+   - Increase grocery budget to $150 (cook more meals)
+   - Net savings: $40/month
+
+2. **Track Hidden Expenses**:
+   - Add housing costs to your tracking
+   - Monitor utilities and insurance
+   - Track all cash purchases
+
+3. **Monthly Review**:
+   - Compare actual vs. budgeted amounts
+   - Adjust categories as needed
+   - Celebrate wins and learn from overages
+
+4. **Automate Savings**:
+   - Set up automatic transfer to savings on payday
+   - Start with even $50/month if needed
+   - Increase by $25 every 3 months as you adjust
+
+Remember: The 50/30/20 rule is a good starting point (50% needs, 30% wants, 20% savings), but adjust based on your specific situation and goals.</pre></details>
+</div>
+
+</body>
+</html>
