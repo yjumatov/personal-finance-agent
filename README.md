@@ -8,8 +8,10 @@ An AI-powered personal finance tool that uses the Claude API to run your expense
 
 - Three AI agents in sequence: **Expense Analyzer → Financial Advisor → Budget Planner**
 - Three input methods: manual entry, CSV upload, or free-text paste
-- Two interfaces: **Streamlit web app** and a **FastAPI REST API** with a standalone HTML client
+- Two interfaces: **Streamlit web app** (dark mode by default) and a **FastAPI REST API** with a standalone HTML client
+- Per-agent token usage tracking, viewable in the Streamlit UI
 - Downloadable JSON reports
+- A rule-based eval harness with 5 synthetic scenarios and an HTML report generator
 - All processing is done in memory — no expense data is stored
 
 ---
@@ -48,15 +50,22 @@ Each agent makes a separate Claude API call, so results build on each other.
 personal-finance-agent/
 ├── agents/
 │   ├── __init__.py
-│   ├── crew.py              # Main pipeline using the Anthropic SDK
+│   ├── crew.py              # Main pipeline using the Anthropic SDK, tracks per-agent token usage
 │   ├── simple_crew.py       # Alternative pipeline using direct HTTP requests
 │   ├── expense_analyzer.py  # Expense Analyzer agent definition (CrewAI)
 │   ├── recommender.py       # Financial Advisor agent definition (CrewAI)
 │   └── budget_agent.py      # Budget Planner agent definition (CrewAI)
+├── evals/
+│   ├── __init__.py
+│   ├── test_cases.py        # 5 synthetic expense scenarios with expected signals
+│   ├── eval_runner.py       # Runs each scenario through the pipeline and scores it
+│   ├── scorer.py            # Rule-based 0-9 rubric (analysis/recommendations/budget)
+│   └── report_generator.py  # Renders results to eval_report.html
+├── run_evals.py                    # CLI entry point for the eval suite
 ├── app.py                          # Streamlit web interface
 ├── api_server.py                   # FastAPI REST server
 ├── personal_finance_agent.html     # Standalone HTML client (dark/light mode)
-├── personal_finance_agent_fixed.html  # Updated HTML client
+├── personal_finance_agent_fixed.html  # Updated HTML client (defaults to dark mode)
 ├── sample_expenses.csv             # Sample data for testing
 ├── requirements.txt
 ├── .env.example
@@ -204,6 +213,22 @@ curl -X POST http://localhost:8000/run \
       ]
     }
   }'
+```
+
+---
+
+## Evaluation
+
+A rule-based eval suite lives in `evals/` and scores pipeline output without needing an LLM judge.
+
+- **5 scenarios** (`evals/test_cases.py`): Student Budget, Professional, Overspender, Saver, Inconsistent — each a set of 10 expenses plus keywords the analysis should surface.
+- **Scoring** (`evals/scorer.py`): each of the three sections (analysis, recommendations, budget) is scored 0-3 on structural/content checks (expected keywords present, dollar amounts and percentages shown, sufficient length, category coverage), for a 0-9 total per scenario.
+- **Report** (`evals/report_generator.py`): renders per-scenario scores, agent outputs, and token usage into `eval_report.html`.
+
+```bash
+python run_evals.py            # run all 5 scenarios → eval_report.html
+python run_evals.py --fast     # run only the first scenario (quick smoke test)
+python run_evals.py --output report.html   # custom output path
 ```
 
 ---
