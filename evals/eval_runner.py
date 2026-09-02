@@ -36,7 +36,8 @@ def run_single(test_case: dict) -> dict:
     usage = result.get("usage", {})
 
     print(f"  Score: {scores['total']}/{scores['max']}  "
-          f"(analysis={scores['analysis']} rec={scores['recommendations']} budget={scores['budget']})")
+          f"(analysis={scores['analysis']} rec={scores['recommendations']} "
+          f"budget={scores['budget']} grounding={scores['grounding']})")
     if usage:
         print(f"  Tokens: {usage.get('total_input_tokens', 0)} in / "
               f"{usage.get('total_output_tokens', 0)} out")

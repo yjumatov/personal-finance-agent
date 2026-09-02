@@ -14,7 +14,7 @@ def _esc(text: str) -> str:
     return html.escape(str(text))
 
 
-def _score_color(score: int, max_score: int = 9) -> str:
+def _score_color(score: int, max_score: int = 12) -> str:
     ratio = score / max_score
     if ratio >= 0.78:
         return "#2e7d32"   # green
@@ -77,8 +77,9 @@ def _scenario_card(r: dict, idx: int) -> str:
     scores = r["scores"]
     usage  = r.get("usage") or {}
     outputs = r.get("outputs") or {}
+    grounding = scores.get("grounding_evidence") or {}
 
-    score_color = _score_color(scores["total"])
+    score_color = _score_color(scores["total"], scores["max"])
 
     expenses_html = "<table class='usage-table'><thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Category</th></tr></thead><tbody>"
     for e in (r.get("expenses") or []):
@@ -97,6 +98,24 @@ def _scenario_card(r: dict, idx: int) -> str:
             f'<pre class="output-pre">{_esc(text)}</pre>'
             f'</details>'
         )
+
+    grounding_warn = " warn-box" if grounding.get("score", 0) == 0 else ""
+    hallucinated = grounding.get("hallucinated_amounts") or []
+    hallucinated_str = ", ".join(f"${a:,.2f}" for a in hallucinated) if hallucinated else "none"
+
+    grounding_html = f"""
+  <h3>Grounding Evidence</h3>
+  <table class="usage-table{grounding_warn}">
+    <tbody>
+      <tr><td>Expected total (computed from input)</td><td>${grounding.get("expected_total", 0):,.2f}</td></tr>
+      <tr><td>Total appears in analysis</td><td>{"yes" if grounding.get("total_found") else "no"}</td></tr>
+      <tr><td>Category subtotals matched</td><td>{grounding.get("categories_matched", 0)} / {grounding.get("categories_total", 0)}</td></tr>
+      <tr><td>Hallucinated amounts</td><td>{_esc(hallucinated_str)}</td></tr>
+    </tbody>
+  </table>
+"""
+    if grounding.get("no_amounts_found"):
+        grounding_html += '  <p class="error-msg">⚠ No dollar amounts found in the analysis at all.</p>\n'
 
     return f"""
 <div class="card">
@@ -120,8 +139,12 @@ def _scenario_card(r: dict, idx: int) -> str:
       <span class="label">Budget Plan ({scores["budget"]}/3)</span>
       {_bar(scores["budget"])}
     </div>
+    <div>
+      <span class="label">Grounding ({scores["grounding"]}/3)</span>
+      {_bar(scores["grounding"])}
+    </div>
   </div>
-
+  {grounding_html}
   <h3>Token Usage</h3>
   {_usage_table(usage)}
 
@@ -143,11 +166,14 @@ def _summary_table(results: list[dict]) -> str:
     for r in results:
         name = _esc(r["name"])
         if r["status"] == "error":
-            rows += f"<tr><td>{name}</td><td colspan='5' class='error-msg'>Error</td></tr>"
+            rows += f"<tr><td>{name}</td><td colspan='6' class='error-msg'>Error</td></tr>"
             continue
         s = r["scores"]
         u = r.get("usage") or {}
-        color = _score_color(s["total"])
+        color = _score_color(s["total"], s["max"])
+        grounding_cell = f"{s['grounding']}/3"
+        if s["grounding"] == 0:
+            grounding_cell = "<strong style='color:#c62828;'>0/3 ⚠</strong>"
         rows += (
             f"<tr>"
             f"<td>{name}</td>"
@@ -155,6 +181,7 @@ def _summary_table(results: list[dict]) -> str:
             f"<td>{s['analysis']}/3</td>"
             f"<td>{s['recommendations']}/3</td>"
             f"<td>{s['budget']}/3</td>"
+            f"<td>{grounding_cell}</td>"
             f"<td>{u.get('total_input_tokens',0):,} / {u.get('total_output_tokens',0):,}</td>"
             f"</tr>"
         )
@@ -162,7 +189,7 @@ def _summary_table(results: list[dict]) -> str:
         "<table class='usage-table'>"
         "<thead><tr>"
         "<th>Scenario</th><th>Total score</th><th>Analysis</th>"
-        "<th>Recommendations</th><th>Budget</th><th>Tokens in/out</th>"
+        "<th>Recommendations</th><th>Budget</th><th>Grounding</th><th>Tokens in/out</th>"
         "</tr></thead>"
         f"<tbody>{rows}</tbody></table>"
     )
@@ -176,17 +203,20 @@ def _aggregate(results: list[dict]) -> str:
         return "<p>No successful runs to aggregate.</p>"
 
     avg_score   = sum(r["scores"]["total"] for r in ok) / len(ok)
+    avg_max     = sum(r["scores"]["max"] for r in ok) / len(ok)
     avg_in      = sum((r.get("usage") or {}).get("total_input_tokens",  0) for r in ok) / len(ok)
     avg_out     = sum((r.get("usage") or {}).get("total_output_tokens", 0) for r in ok) / len(ok)
     total_in    = sum((r.get("usage") or {}).get("total_input_tokens",  0) for r in ok)
     total_out   = sum((r.get("usage") or {}).get("total_output_tokens", 0) for r in ok)
+    zero_grounding = sum(1 for r in ok if r["scores"]["grounding"] == 0)
 
     return f"""
 <div class="aggregate">
-  <div class="stat"><span class="stat-num">{avg_score:.1f}/9</span><br>avg score</div>
+  <div class="stat"><span class="stat-num">{avg_score:.1f}/{avg_max:.0f}</span><br>avg score</div>
   <div class="stat"><span class="stat-num">{avg_in:,.0f}</span><br>avg input tokens/run</div>
   <div class="stat"><span class="stat-num">{avg_out:,.0f}</span><br>avg output tokens/run</div>
   <div class="stat"><span class="stat-num">{total_in + total_out:,}</span><br>total tokens ({len(ok)} runs)</div>
+  <div class="stat"><span class="stat-num" style="color:{'#c62828' if zero_grounding else '#2e7d32'};">{zero_grounding}/{len(ok)}</span><br>scenarios with zero grounding</div>
 </div>
 """
 
@@ -207,13 +237,14 @@ h2 { font-size: 1.25rem; margin: 0 0 4px; }
 h3 { font-size: 1rem; margin: 20px 0 8px; color: #424242; }
 .desc { color: #757575; margin: 0 0 16px; font-size: .9rem; }
 .score-badge { font-size: 1.5rem; font-weight: 700; margin: 8px 0 16px; }
-.score-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+.score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
               margin-bottom: 20px; }
 .label { font-size: .8rem; color: #616161; display: block; margin-bottom: 4px; }
 .usage-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
 .usage-table th { text-align: left; background: #eeeeee; padding: 6px 10px;
                   border-bottom: 2px solid #bdbdbd; }
 .usage-table td { padding: 5px 10px; border-bottom: 1px solid #e0e0e0; }
+.usage-table.warn-box { outline: 2px solid #c62828; border-radius: 4px; }
 details { margin-bottom: 8px; }
 summary { cursor: pointer; padding: 6px; background: #f5f5f5;
           border-radius: 4px; font-size: .9rem; }

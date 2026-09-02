@@ -660,10 +660,17 @@
             localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
         }
 
-        // Load theme preference
+        // Load theme preference (default to dark mode)
         window.addEventListener('load', () => {
-            if (localStorage.getItem('theme') === 'dark') {
-                toggleTheme();
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                // Stay in light mode if user saved it
+            } else {
+                // Default to dark mode
+                if (!document.body.classList.contains('dark-mode')) {
+                    document.body.classList.add('dark-mode');
+                    document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+                }
             }
         });
 
@@ -800,11 +807,26 @@
 
                 if (data.status === 'success') {
                     analysisResult = data;
-                    // FIXED: Display the correct fields from API response
-                    document.getElementById('analysisResult').textContent = data.analysis || 'Analysis complete';
-                    document.getElementById('recommendationsResult').textContent = data.recommendations || 'Recommendations coming soon';
-                    document.getElementById('budgetResult').textContent = data.budget || 'Budget plan coming soon';
-                    
+    
+                    // DEBUG: Log what we're getting
+                    console.log('API Response:', data);
+                    console.log('Has analysis:', !!data.analysis);
+                    console.log('Has recommendations:', !!data.recommendations);
+                    console.log('Has budget:', !!data.budget);
+    
+                    // Display all three sections
+                    const analysis = data.analysis || 'Analysis complete';
+                    const recommendations = data.recommendations || 'Recommendations coming soon';
+                    const budget = data.budget || 'Budget plan coming soon';
+    
+                    console.log('Analysis length:', analysis.length);
+                    console.log('Recommendations length:', recommendations.length);
+                    console.log('Budget length:', budget.length);
+    
+                    document.getElementById('analysisResult').textContent = analysis;
+                    document.getElementById('recommendationsResult').textContent = recommendations;
+                    document.getElementById('budgetResult').textContent = budget;
+
                     document.getElementById('resultsSection').style.display = 'block';
                     showAlert('✅ Analysis complete!', 'success');
                     

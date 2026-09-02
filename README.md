@@ -59,13 +59,14 @@ personal-finance-agent/
 │   ├── __init__.py
 │   ├── test_cases.py        # 5 synthetic expense scenarios with expected signals
 │   ├── eval_runner.py       # Runs each scenario through the pipeline and scores it
-│   ├── scorer.py            # Rule-based 0-9 rubric (analysis/recommendations/budget)
-│   └── report_generator.py  # Renders results to eval_report.html
+│   ├── scorer.py            # Rule-based 0-12 rubric (analysis/recommendations/budget/grounding)
+│   ├── test_scorer.py       # Offline unit tests for the grounding scorer
+│   ├── report_generator.py  # Renders results to eval_report.html
+│   └── baseline.json        # Regression baseline; created by --save-baseline, not present until then
 ├── run_evals.py                    # CLI entry point for the eval suite
 ├── app.py                          # Streamlit web interface
 ├── api_server.py                   # FastAPI REST server
-├── personal_finance_agent.html     # Standalone HTML client (dark/light mode)
-├── personal_finance_agent_fixed.html  # Updated HTML client (defaults to dark mode)
+├── personal_finance_agent.html     # Standalone HTML client (dark/light mode, dark by default)
 ├── sample_expenses.csv             # Sample data for testing
 ├── requirements.txt
 ├── .env.example
@@ -219,16 +220,30 @@ curl -X POST http://localhost:8000/run \
 
 ## Evaluation
 
-A rule-based eval suite lives in `evals/` and scores pipeline output without needing an LLM judge.
+A rule-based eval suite lives in `evals/` and scores pipeline output without needing an LLM judge — no external eval framework, standard library only.
 
 - **5 scenarios** (`evals/test_cases.py`): Student Budget, Professional, Overspender, Saver, Inconsistent — each a set of 10 expenses plus keywords the analysis should surface.
-- **Scoring** (`evals/scorer.py`): each of the three sections (analysis, recommendations, budget) is scored 0-3 on structural/content checks (expected keywords present, dollar amounts and percentages shown, sufficient length, category coverage), for a 0-9 total per scenario.
-- **Report** (`evals/report_generator.py`): renders per-scenario scores, agent outputs, and token usage into `eval_report.html`.
+- **Scoring** (`evals/scorer.py`): four dimensions, each 0-3, for a 0-12 total per scenario:
+  - **Analysis, Recommendations, Budget** — structural/shape checks only: expected keywords present, dollar amounts and percentages shown, sufficient length, category coverage. These confirm the output *looks* like a correct answer; they cannot tell a correct analysis from a confidently wrong one.
+  - **Grounding** — the one dimension that checks correctness. It recomputes the real total and per-category subtotals directly from the input `expense_data`, extracts every dollar figure the model wrote in its analysis, and checks each one against that ground truth (within $0.01). A scenario where the model invents a number that matches nothing in the input scores 0 on this dimension regardless of how well-written the rest of the output is.
+- **Report** (`evals/report_generator.py`): renders per-scenario scores, grounding evidence (expected total, matched subtotals, any hallucinated amounts), agent outputs, and token usage into `eval_report.html`.
+- **What this scorer does *not* do**: it never judges tone, reasoning quality, or whether the advice is actually good financial advice — it's a cheap, fast, deterministic check for structural completeness and numeric honesty, not a substitute for human or LLM-judge review.
 
 ```bash
-python run_evals.py            # run all 5 scenarios → eval_report.html
-python run_evals.py --fast     # run only the first scenario (quick smoke test)
-python run_evals.py --output report.html   # custom output path
+python run_evals.py                       # run all 5 scenarios → eval_report.html
+python run_evals.py --fast                # run only the first scenario (quick smoke test)
+python run_evals.py --output report.html  # custom output path
+python run_evals.py --threshold 0.8       # require 80% of max score to pass (default: 0.7)
+python run_evals.py --strict              # fail the run if any single scenario is below threshold
+python run_evals.py --save-baseline       # record this run's scores as the regression baseline
+```
+
+`run_evals.py` exits 0 on pass and 1 on fail, so it can be wired into CI. A scenario with grounding score 0 always fails, regardless of threshold — a pipeline that invents numbers is broken even if it reads well. If `evals/baseline.json` exists (from a previous `--save-baseline` run), each run prints a per-scenario delta against it and flags any scenario that dropped by 2+ points as a regression (this doesn't fail the run by itself).
+
+Unit tests for the grounding scorer (offline, no API calls) live in `evals/test_scorer.py`:
+
+```bash
+python -m unittest evals.test_scorer
 ```
 
 ---

@@ -6,6 +6,7 @@ venv/
 ven/
 *.db
 *.csv
+!sample_expenses.csv
 logs/
 .DS_Store
 COMPLETE_CHAT_REFERENCE.md
